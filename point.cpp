@@ -1,5 +1,6 @@
 #include "point.h"
 #include <cmath>
+#include <cassert>
 
 double Distance(const Point &a, const Point &b) {
     assert(a.size() == b.size());

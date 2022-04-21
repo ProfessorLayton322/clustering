@@ -2,6 +2,7 @@
 #include <cassert>
 #include <ctime>
 #include <algorithm>
+#include <cstdlib>
 #include "prim.h"
 #include "prim_thread.h"
 #include "generate_tests.h"
@@ -9,20 +10,19 @@
 using std::cout;
 using std::endl;
 
-int main() {
-    const size_t n = 50000, dim = 30;
+void  MeasureTime(size_t n, size_t dim, int threads) {
     auto points = GenerateTests(n, dim);
-    time_t seconds;
-    for (int threads = 8; threads > 0; threads--) {
-        MSTCalculator mstCalculator(points);
-        seconds = time(NULL);
-        auto graph_threaded = mstCalculator.Calculate(threads);
-        seconds = time(NULL) - seconds;
-        printf("Took %ld seconds to build with %d threads\n", seconds, threads);
-    }
-    seconds = time(NULL);
-    auto graph = MinimalSpanningTree(points);
+    MSTCalculator mstCalculator(points);
+    time_t seconds = time(NULL);
+    auto graph_threaded = mstCalculator.Calculate(threads);
     seconds = time(NULL) - seconds;
-    printf("Took %ld seconds to build without threads\n", seconds);
+    printf("Takes %ld seconds for %d nodes %d dim and %d threads\n", seconds, n, dim, threads);
+}
+
+int main(int argc, char* argv[]) {
+    const size_t n = atoi(argv[1]);
+    size_t dim = atoi(argv[2]);
+    int threads = atoi(argv[3]);
+    MeasureTime(n, dim, threads); 
     return 0;
 }

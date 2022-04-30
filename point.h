@@ -1,7 +1,7 @@
 #include <vector>
 
-typedef std::vector<double> Point;
+typedef std::vector<float> Point;
 
-double Distance(const Point& a, const Point& b);
+float Distance(const Point& a, const Point& b);
 
 //Hello world

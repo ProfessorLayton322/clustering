@@ -152,3 +152,17 @@ float DistanceSquared(const Point &a, const Point &b) {
     }
     return (squareDist >= 0) ? squareDist : 0;
 }
+
+std::ostream& operator << (std::ostream& out, const Point& point) {
+    for (float x : point) {
+        out << x << " ";
+    }
+    return out;
+}
+
+std::ostream& operator << (std::ostream& out, const std::vector<Point>& points) {
+    for (const Point& point : points) {
+        out << point << std::endl;
+    }
+    return out;
+}

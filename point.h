@@ -2,6 +2,6 @@
 
 typedef std::vector<float> Point;
 
-float Distance(const Point& a, const Point& b);
+float DistanceSquared(const Point& a, const Point& b);
 
 //Hello world

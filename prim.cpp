@@ -10,7 +10,7 @@ void UpdateClosest(size_t p, std::vector<std::pair<double, size_t>>& closest,
         if (marked[i]) {
             continue;
         }
-        closest[i] = std::min(closest[i], {Distance(points[p], points[i]), p});
+        closest[i] = std::min(closest[i], {DistanceSquared(points[p], points[i]), p});
     }
 }
 
@@ -34,7 +34,7 @@ Graph MinimalSpanningTree(const std::vector<Point>& points) {
     std::vector<bool> marked(n);
     marked[0] = true;
     for (size_t i = 1; i < n; i++) {
-        closest[i] = std::make_pair(Distance(points[0], points[i]), 0);
+        closest[i] = std::make_pair(DistanceSquared(points[0], points[i]), 0);
     }
     for (size_t iteration = 1; iteration < n; iteration++) {
         size_t u = SelectClosest(closest, marked, points);

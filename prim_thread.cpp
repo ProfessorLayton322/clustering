@@ -9,7 +9,7 @@
 MSTCalculator::MSTCalculator(const std::vector<Point>& points): n(points.size()), points(points), closest(n), marked(n) {
     marked[0] = true;
     for (size_t i = 1; i < n; i++) {
-        closest[i] = std::make_pair(Distance(points[0], points[i]), 0);
+        closest[i] = std::make_pair(DistanceSquared(points[0], points[i]), 0);
     }
 }
 
@@ -61,7 +61,7 @@ void UpdateClosestRange(size_t first, size_t last, size_t p,
         if (marked[i]) {
             continue;
         }
-        closest[i] = std::min(closest[i], {Distance(points[p], points[i]), p});
+        closest[i] = std::min(closest[i], {DistanceSquared(points[p], points[i]), p});
     }
 }
 
@@ -71,7 +71,7 @@ void MSTCalculator::UpdateClosestRange(size_t first, size_t last, size_t p) {
         if (marked[i]) {
             continue;
         }
-        closest[i] = std::min(closest[i], {Distance(points[p], points[i]), p});
+        closest[i] = std::min(closest[i], {DistanceSquared(points[p], points[i]), p});
     }
 }
 
@@ -114,7 +114,7 @@ Graph MinimalSpanningTreeThreads(const std::vector<Point>& points, size_t thread
     std::vector<bool> marked(n);
     marked[0] = true;
     for (size_t i = 1; i < n; i++) {
-        closest[i] = std::make_pair(Distance(points[0], points[i]), 0);
+        closest[i] = std::make_pair(DistanceSquared(points[0], points[i]), 0);
     }
 
     std::vector<std::thread> threads;

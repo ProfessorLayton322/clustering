@@ -141,7 +141,7 @@ float fvec_L2sqr_avx512 (const float *x, const float *y, size_t d)
 }
 #endif
 
-float Distance(const Point &a, const Point &b) {
+float DistanceSquared(const Point &a, const Point &b) {
     assert(a.size() == b.size());
 #ifdef __AVX512F__
     return fvec_L2sqr_avx512(a.data(), b.data(), a.size());
@@ -150,5 +150,5 @@ float Distance(const Point &a, const Point &b) {
     for (size_t i = 0; i < a.size(); i++) {
         squareDist += (a[i] - b[i]) * (a[i] - b[i]);
     }
-    return (squareDist >= 0) ? std::sqrt(squareDist) : 0;
+    return (squareDist >= 0) ? squareDist : 0;
 }

@@ -6,12 +6,11 @@
 #include <cstdlib>
 #include <cmath>
 #include <string>
-#include "prim.h"
 #include "prim_thread.h"
 #include "generate_tests.h"
 #include "prim_naive.h"
 
-void  MeasureTime(size_t n, size_t dim, int threads) {
+void MeasureTime(size_t n, size_t dim, int threads) {
     auto points = GenerateTests(n, dim);
     MSTCalculator mstCalculator(points);
     time_t seconds = time(NULL);
@@ -20,7 +19,7 @@ void  MeasureTime(size_t n, size_t dim, int threads) {
     printf("Takes %ld seconds for %d nodes %d dim and %d threads\n", seconds, n, dim, threads);
 }
 
-bool dfs(int v, int prev, const Graph& g, std::vector<bool> &used) {
+bool dfs(int v, int prev, const Graph& g, std::vector<bool>& used) {
     used[v] = true;
     for (size_t u : g[v]) {
         if (u == prev) {
@@ -36,50 +35,50 @@ bool dfs(int v, int prev, const Graph& g, std::vector<bool> &used) {
     return true;
 }
 
+using std::cout;
+using std::endl;
+
 int main(int argc, char* argv[]) {
 
     const size_t n = atoi(argv[1]);
     const size_t dim = atoi(argv[2]);
     const int threads = atoi(argv[3]);
-    
+
     time_t start = time(NULL);
     const time_t secondsInDay = 24 * 60 * 60;
-    
+
     while (time(NULL) <= start + secondsInDay) {
         auto points = GenerateTests(n, dim);
         MSTCalculator mstCalculator(points);
-        auto graph_threaded = mstCalculator.Calculate(threads);
+        auto graphThreaded = mstCalculator.Calculate(threads);
         std::vector<bool> used(n);
-        
-        if (!dfs(0, -1, graph_threaded, used)) {
-            std::cout << "Graph has a loop" << std::endl;
-            std::cout << points << std::endl;
+
+        if (!dfs(0, -1, graphThreaded, used)) {
+            cout << "Graph has a loop" << endl;
+            cout << points << endl;
             return 0;
         }
 
         for (size_t i = 0; i < n; i++) {
             if (!used[i]) {
-                std::cout << "Graph not connected" << std::endl;
-                std::cout << points << std::endl;
+                cout << "Graph not connected" << endl;
+                cout << points << endl;
+                return 0;
             }
         }
-        
-        float totalWeight = 0;
-        for (size_t v = 0; v < n; v++) {
-            for (size_t u : graph_threaded[v]) {
-                if (u < v) {
-                    continue;
-                }
-                totalWeight += std::sqrt(DistanceSquared(points[u], points[v]));
-            }
+
+        auto realGraph = PrimNaive(points);
+        if (realGraph.Compare(graphThreaded)) {
+            continue;
         }
-        
-        float realWeight = PrimNaive(points);
+
+        float totalWeight = graphThreaded.GetWeight(points);
+        float realWeight = realGraph.GetWeight(points);
         if (std::abs(totalWeight - realWeight) > 1e-2) {
-            std::cout << "Weights do not match" << std::endl;
-            std::cout << totalWeight  << std::endl;
-            std::cout << realWeight  << std::endl;
-            std::cout << points << std::endl;
+            cout << "Weights do not match" << endl;
+            cout << totalWeight << endl;
+            cout << realWeight << endl;
+            cout << points << endl;
             return 0;
         }
     }
@@ -87,7 +86,7 @@ int main(int argc, char* argv[]) {
     const size_t n = atoi(argv[1]);
     size_t dim = atoi(argv[2]);
     int threads = atoi(argv[3]);
-    MeasureTime(n, dim, threads); 
+    MeasureTime(n, dim, threads);
     */
 
     /*
@@ -118,21 +117,21 @@ int main(int argc, char* argv[]) {
             new_points.push_back(points[i]);
         }
     }
-    std::cout << new_points.size() << std::endl;
+    cout << new_points.size() << endl;
     for (size_t i = 0; i < new_points.size(); i++) {
         for (float f : new_points[i]) {
-            std::cout << f << " ";
+            cout << f << " ";
         }
-        std::cout << std::endl;
+        cout << endl;
     }
     MSTCalculator mstCalculator(new_points);
     auto graph = mstCalculator.Calculate(40);
     for (size_t i = 0; i < graph.size(); i++) {
-        std::cout << graph[i].size() << std::endl;
+        cout << graph[i].size() << endl;
         for (size_t u : graph[i]) {
-            std::cout << u << " ";
+            cout << u << " ";
         }
-        std::cout << std::endl;
+        cout << endl;
     }
     */
     return 0;

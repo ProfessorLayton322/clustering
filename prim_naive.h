@@ -1,4 +1,5 @@
 #include "point.h"
+#include "graph.h"
 #include <vector>
 
-float PrimNaive(const std::vector<Point>& points);
+Graph PrimNaive(const std::vector<Point>& points);

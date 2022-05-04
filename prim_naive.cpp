@@ -42,8 +42,9 @@ float PrimNaive(const std::vector<Point>& points) {
             continue;
         }
         answer += e.weight;
+        size_t eliminate = sign[e.to];
         for (size_t i = 0; i < n; i++) {
-            if (sign[i] == sign[e.to]) {
+            if (sign[i] == eliminate) {
                 sign[i] = sign[e.from];
             }
         }

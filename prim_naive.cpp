@@ -22,7 +22,7 @@ Graph PrimNaive(const std::vector<Point>& points) {
     std::vector<Edge> edges;
     edges.reserve(n * n);
 
-    Graph graph(n);
+    Graph graph(points);
 
     for (size_t i = 0; i < n; i++) {
         for (size_t j = i + 1; j < n; j++) {

@@ -36,51 +36,43 @@ bool dfs(int v, int prev, const Graph& g, std::vector<bool>& used) {
 }
 
 using std::cout;
+using std::cin;
 using std::endl;
 
 int main(int argc, char* argv[]) {
+    freopen(argv[1], "r", stdin);
+    
+    size_t dim = atoi(argv[2]);
 
-    const size_t n = atoi(argv[1]);
-    const size_t dim = atoi(argv[2]);
-    const int threads = atoi(argv[3]);
-
-    time_t start = time(NULL);
-    const time_t secondsInDay = 24 * 60 * 60;
-
-    while (time(NULL) <= start + secondsInDay) {
-        auto points = GenerateTests(n, dim);
-        MSTCalculator mstCalculator(points);
-        auto graphThreaded = mstCalculator.Calculate(threads);
-        std::vector<bool> used(n);
-
-        if (!dfs(0, -1, graphThreaded, used)) {
-            cout << "Graph has a loop" << endl;
-            cout << points << endl;
-            return 0;
+    size_t n;
+    cin >> n;
+    std::vector<Point> points(n, Point(dim));
+    for (size_t i = 0; i < n; i++) {
+        for (size_t j = 0; j < dim; j++) {
+            cin >> points[i][j];
         }
+    }
 
-        for (size_t i = 0; i < n; i++) {
-            if (!used[i]) {
-                cout << "Graph not connected" << endl;
-                cout << points << endl;
-                return 0;
+    Graph graph(points);
+
+    for (size_t i = 0; i < n; i++) {
+        size_t k;
+        cin >> k;
+        for (size_t j = 0; j < k; j++) {
+            size_t u;
+            cin >> u;
+            if (i > u) {
+                graph.AddEdge(i, u);
             }
         }
+    }
 
-        auto realGraph = PrimNaive(points);
-        if (realGraph.Compare(graphThreaded)) {
-            continue;
-        }
-
-        float totalWeight = graphThreaded.GetWeight(points);
-        float realWeight = realGraph.GetWeight(points);
-        if (std::abs(totalWeight - realWeight) > 1e-2) {
-            cout << "Weights do not match" << endl;
-            cout << totalWeight << endl;
-            cout << realWeight << endl;
-            cout << points << endl;
-            return 0;
-        }
+    float totalWeight = graph.GetWeight();
+    for (float alpha = 0.9f; alpha >= 0.1f; alpha -= 0.1f) {
+        float lambda = alpha * (totalWeight / (float)(n - 1));
+        graph.RemoveByTreshold(lambda);
+        int clusters = n - graph.CountEdges();
+        cout << clusters << " clusters for alpha = " << alpha << endl;
     }
     /*
     const size_t n = atoi(argv[1]);

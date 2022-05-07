@@ -6,10 +6,10 @@
 
 struct Edge {
     float weight;
-    size_t from;
-    size_t to;
+    int from;
+    int to;
 
-    Edge(float weight, size_t from, size_t to) : weight(weight), from(from), to(to) {}
+    Edge(float weight, int from, int to) : weight(weight), from(from), to(to) {}
 };
 
 struct EdgeCmp {
@@ -24,16 +24,16 @@ Graph PrimNaive(const std::vector<Point>& points) {
 
     Graph graph(points);
 
-    for (size_t i = 0; i < n; i++) {
-        for (size_t j = i + 1; j < n; j++) {
+    for (int i = 0; i < n; i++) {
+        for (int j = i + 1; j < n; j++) {
             float distance = std::sqrt(DistanceSquared(points[i], points[j]));
             edges.emplace_back(distance, i, j);
         }
     }
     std::sort(edges.begin(), edges.end(), EdgeCmp());
 
-    std::vector<size_t> sign(n);
-    for (size_t i = 0; i < n; i++) {
+    std::vector<int> sign(n);
+    for (int i = 0; i < n; i++) {
         sign[i] = i;
     }
     // The most naive O(n^2) algorithm
@@ -42,8 +42,8 @@ Graph PrimNaive(const std::vector<Point>& points) {
             continue;
         }
         graph.AddEdge(e.from, e.to);
-        size_t eliminate = sign[e.to];
-        for (size_t i = 0; i < n; i++) {
+        int eliminate = sign[e.to];
+        for (int i = 0; i < n; i++) {
             if (sign[i] == eliminate) {
                 sign[i] = sign[e.from];
             }

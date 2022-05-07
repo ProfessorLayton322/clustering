@@ -17,13 +17,13 @@ public:
 
     int CountEdges() const;
 
-    void AddEdge(size_t v, size_t u);
+    void AddEdge(int v, int u);
 
-    void RemoveEdge(size_t v, size_t u);
+    void RemoveEdge(int v, int u);
 
-    std::vector<size_t>& operator[](size_t v);
+    std::vector<int>& operator[](int v);
 
-    const std::vector<size_t>& operator[](size_t v) const;
+    const std::vector<int>& operator[](int v) const;
 
     bool Compare(Graph& other);
 
@@ -31,8 +31,10 @@ public:
 
     const std::vector<Point>& Points() const;
 
+    const std::vector<std::vector<int>>& GetGraph() const;
+
 private:
-    std::vector<std::vector<size_t>> graph_;
+    std::vector<std::vector<int>> graph_;
     
     size_t verts_;
 

@@ -6,10 +6,12 @@
 #include <cstdlib>
 #include <cmath>
 #include <string>
+
 #include "prim_thread.h"
 #include "generate_tests.h"
 #include "prim_naive.h"
 
+/*
 void MeasureTime(size_t n, size_t dim, int threads) {
     auto points = GenerateTests(n, dim);
     MSTCalculator mstCalculator(points);
@@ -18,28 +20,26 @@ void MeasureTime(size_t n, size_t dim, int threads) {
     seconds = time(NULL) - seconds;
     printf("Takes %ld seconds for %d nodes %d dim and %d threads\n", seconds, n, dim, threads);
 }
-
-bool dfs(int v, int prev, const Graph& g, std::vector<bool>& used) {
-    used[v] = true;
-    for (size_t u : g[v]) {
-        if (u == prev) {
-            continue;
-        }
-        if (used[u]) {
-            return false;
-        }
-        if (!dfs(u, v, g, used)) {
-            return false;
-        }
-    }
-    return true;
-}
+*/
 
 using std::cout;
 using std::cin;
 using std::endl;
 
+#include "Eigen/Dense"
+using Matrix = Eigen::MatrixXf;
+
+
 int main(int argc, char* argv[]) {
+    Matrix m(3, 3);
+    m << 1, 2, 3,
+         4, 5, 6,
+         7, 8, 10;
+
+    cout << m << endl;
+    cout << m / 2.0f << endl;
+    cout << m.determinant() << endl;
+    /*
     freopen(argv[1], "r", stdin);
     
     size_t dim = atoi(argv[2]);
@@ -74,6 +74,8 @@ int main(int argc, char* argv[]) {
         int clusters = n - graph.CountEdges();
         cout << clusters << " clusters for alpha = " << alpha << endl;
     }
+    */
+
     /*
     const size_t n = atoi(argv[1]);
     size_t dim = atoi(argv[2]);

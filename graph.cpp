@@ -12,8 +12,8 @@ Graph::Graph(Graph&& other): graph_(std::move(other.graph_)), verts_(other.verts
 
 float Graph::GetWeight() const {
     float answer = 0;
-    for (size_t v = 0; v < verts_; v++) {
-        for (size_t u : graph_[v]) {
+    for (int v = 0; v < verts_; v++) {
+        for (int u : graph_[v]) {
             if (u < v) {
                 continue;
             }
@@ -23,12 +23,12 @@ float Graph::GetWeight() const {
     return answer;
 }
 
-void Graph::AddEdge(size_t v, size_t u) {
+void Graph::AddEdge(int v, int u) {
     graph_[v].push_back(u);
     graph_[u].push_back(v);
 }
 
-void Graph::RemoveEdge(size_t v, size_t u) {
+void Graph::RemoveEdge(int v, int u) {
     for (size_t i = 0; i < graph_[v].size(); i++) {
         if (graph_[v][i] == u) {
             std::swap(graph_[v][i], graph_[v].back());
@@ -36,7 +36,7 @@ void Graph::RemoveEdge(size_t v, size_t u) {
             break;
         }
     }
-    for (size_t i = 0; i < graph_[u].size(); i++) {
+    for (int i = 0; i < graph_[u].size(); i++) {
         if (graph_[u][i] == v) {
             std::swap(graph_[u][i], graph_[u].back());
             graph_[u].pop_back();
@@ -45,11 +45,11 @@ void Graph::RemoveEdge(size_t v, size_t u) {
     }
 }
 
-std::vector<size_t>& Graph::operator[](size_t v) {
+std::vector<int>& Graph::operator[](int v) {
     return graph_[v];
 }
 
-const std::vector<size_t>& Graph::operator[](size_t v) const {
+const std::vector<int>& Graph::operator[](int v) const {
     return graph_[v];
 }
 
@@ -60,23 +60,23 @@ bool Graph::Compare(Graph& other) {
 }
 
 void Graph::SortLists() {
-    for (size_t v = 0; v < verts_; v++) {
+    for (int v = 0; v < verts_; v++) {
         std::sort(graph_[v].begin(), graph_[v].end());
     }
 }
 
 int Graph::CountEdges() const {
     int answer = 0;
-    for (size_t v = 0; v < verts_; v++) {
+    for (int v = 0; v < verts_; v++) {
         answer += graph_[v].size();
     }
     return answer / 2;
 }
 
 void Graph::RemoveByTreshold(float treshold) {
-    std::vector<std::vector<size_t> > newGraph(verts_);
-    for (size_t v = 0; v < verts_; v++) {
-        for (size_t u : graph_[v]) {
+    std::vector<std::vector<int> > newGraph(verts_);
+    for (int v = 0; v < verts_; v++) {
+        for (int u : graph_[v]) {
             if (u > v) {
                 continue;
             }
@@ -92,4 +92,8 @@ void Graph::RemoveByTreshold(float treshold) {
 
 const std::vector<Point>& Graph::Points() const {
     return points_;
+}
+
+const std::vector<std::vector<int>>& Graph::GetGraph() const {
+    return graph_;
 }

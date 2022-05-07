@@ -1,7 +1,10 @@
 #include "point.h"
-#include <x86intrin.h>
 #include <cmath>
 #include <cassert>
+
+#ifdef __AVX512F__
+
+#include <x86intrin.h>
 
 // reads 0 <= d < 4 floats as __m128
 static inline __m128 masked_read(int d, const float* x) {
@@ -72,7 +75,6 @@ float fvec_L2sqr_avx(const float* x, const float* y, size_t d) {
     return _mm_cvtss_f32(msum2);
 }
 
-#ifdef __AVX512F__
 // reads 0 <= d < 16 floats as __m512
 static inline __m512 masked_read_16(int d, const float* x) {
     assert(0 <= d && d < 16);

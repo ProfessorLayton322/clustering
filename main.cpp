@@ -10,6 +10,7 @@
 #include "prim_thread.h"
 #include "generate_tests.h"
 #include "prim_naive.h"
+#include "root_forest.h"
 
 /*
 void MeasureTime(size_t n, size_t dim, int threads) {
@@ -26,26 +27,12 @@ using std::cout;
 using std::cin;
 using std::endl;
 
-#include "Eigen/Dense"
-using Matrix = Eigen::MatrixXf;
-
 
 int main(int argc, char* argv[]) {
-    Matrix m(3, 3);
-    m << 1, 2, 3,
-         4, 5, 6,
-         7, 8, 10;
-
-    cout << m << endl;
-    cout << m / 2.0f << endl;
-    cout << m.determinant() << endl;
-    /*
     freopen(argv[1], "r", stdin);
     
-    size_t dim = atoi(argv[2]);
-
-    size_t n;
-    cin >> n;
+    size_t n, dim;
+    cin >> n >> dim;
     std::vector<Point> points(n, Point(dim));
     for (size_t i = 0; i < n; i++) {
         for (size_t j = 0; j < dim; j++) {
@@ -67,21 +54,13 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    float totalWeight = graph.GetWeight();
-    for (float alpha = 0.9f; alpha >= 0.1f; alpha -= 0.1f) {
-        float lambda = alpha * (totalWeight / (float)(n - 1));
-        graph.RemoveByTreshold(lambda);
-        int clusters = n - graph.CountEdges();
-        cout << clusters << " clusters for alpha = " << alpha << endl;
-    }
-    */
+    cout << graph.Points() << endl << endl;
 
-    /*
-    const size_t n = atoi(argv[1]);
-    size_t dim = atoi(argv[2]);
-    int threads = atoi(argv[3]);
-    MeasureTime(n, dim, threads);
-    */
+    RootForest forest(graph);
+
+    int root = forest.GetBiggestCluster(0);
+    cout << root << endl;
+    cout << forest.GetClusterVolume(root) << endl;
 
     /*
     freopen(argv[1], "r", stdin);

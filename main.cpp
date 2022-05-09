@@ -27,40 +27,52 @@ using std::cout;
 using std::cin;
 using std::endl;
 
+void PrintClusters(const std::vector<std::vector<int>>& clustering) {
+    size_t cluster_num = clustering.size();
+    cout << cluster_num << endl;
+    for (int i = 0; i < cluster_num; i++) {
+        cout << clustering[i].size() << endl;
+    }
+    for (int i = 0; i < cluster_num; i++) {
+        for (int v : clustering[i]) {
+            cout << v << " ";
+        }
+        cout << endl;
+    }
+}
 
 int main(int argc, char* argv[]) {
     freopen(argv[1], "r", stdin);
+    float ratio = atof(argv[2]);
+    int clustersDesired = atoi(argv[3]);
+
+    auto graph = ReadGraph();
+    float treshold = graph.GetWeight() * ratio;
     
-    size_t n, dim;
-    cin >> n >> dim;
-    std::vector<Point> points(n, Point(dim));
-    for (size_t i = 0; i < n; i++) {
-        for (size_t j = 0; j < dim; j++) {
-            cin >> points[i][j];
-        }
-    }
-
-    Graph graph(points);
-
-    for (size_t i = 0; i < n; i++) {
-        size_t k;
-        cin >> k;
-        for (size_t j = 0; j < k; j++) {
-            size_t u;
-            cin >> u;
-            if (i > u) {
-                graph.AddEdge(i, u);
-            }
-        }
-    }
-
-    cout << graph.Points() << endl << endl;
-
     RootForest forest(graph);
 
-    int root = forest.GetBiggestCluster(0);
-    cout << root << endl;
-    cout << forest.GetClusterVolume(root) << endl;
+    int cutByTreshold = 0, cutByVolume = 0;
+
+    for (int i = 0; i < clustersDesired; i++) {
+        int toBeCut = forest.GetBiggestCluster(100);
+        if (toBeCut == -1) {
+            break;
+        }
+        if (forest.SeparateByTreshold(toBeCut, treshold)) {
+            cutByTreshold++;
+            continue;
+        }
+        if (!forest.SeparateByVolume(toBeCut)) {
+            cout << "Cant split by volume" << endl;
+            return 1;
+        }
+        cutByVolume++;
+    }
+
+    cout << cutByTreshold << " " << cutByVolume << endl;
+
+    auto result = forest.GetClustering();
+    PrintClusters(result);
 
     /*
     freopen(argv[1], "r", stdin);

@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <iostream>
 #include <utility>
 #include "graph.h"
 
@@ -96,4 +97,33 @@ const std::vector<Point>& Graph::Points() const {
 
 const std::vector<std::vector<int>>& Graph::GetGraph() const {
     return graph_;
+}
+
+using std::cin;
+
+Graph ReadGraph() {
+    size_t n, dim;
+    cin >> n >> dim;
+    std::vector<Point> points(n, Point(dim));
+    for (size_t i = 0; i < n; i++) {
+        for (size_t j = 0; j < dim; j++) {
+        cin >> points[i][j];
+        }
+    }
+
+    Graph graph(points);
+
+    for (size_t i = 0; i < n; i++) {
+        size_t k;
+        cin >> k;
+        for (size_t j = 0; j < k; j++) {
+            size_t u;
+            cin >> u;
+            if (i > u) {
+                graph.AddEdge(i, u);
+            }
+        }
+    }
+
+    return graph;
 }

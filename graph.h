@@ -41,5 +41,6 @@ private:
     std::vector<Point> points_;
 
     void SortLists();
-
 };
+
+Graph ReadGraph();

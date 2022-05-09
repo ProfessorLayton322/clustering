@@ -30,7 +30,7 @@ public:
     float GetClusterVolume(int clusterRoot) const;
 
     //Returns the final partition into clusters
-    std::vector<int> GetClustering() const;
+    std::vector<std::vector<int>> GetClustering() const;
 
     //Read only points
     const std::vector<Matrix>& Points() const;
@@ -45,7 +45,7 @@ private:
     void InitialDfs(int v, int prev, std::vector<bool> &used);
 
     template<typename Callback>
-    void Dfs(int v, const Callback& edgeCallback);
+    void Dfs(int v, const Callback& edgeCallback) const;
 
     float CalculateVolume(const Matrix& transposedSum, const Matrix& plainSum, int size) const;
 

@@ -106,7 +106,7 @@ void RootForest::SeparateSubtree(int oldRoot, int newRoot) {
 }
 
 template<typename Callback>
-void RootForest::Dfs(int v, const Callback& edgeCallback) {
+void RootForest::Dfs(int v, const Callback& edgeCallback) const {
     if (parent_[v] != -1) {
         edgeCallback(v);
     }
@@ -193,4 +193,19 @@ bool RootForest::SeparateByVolume(int clusterRoot) {
     }
     SeparateSubtree(clusterRoot, optimalCut);
     return true;
+}
+
+std::vector<std::vector<int>> RootForest::GetClustering() const {
+    std::vector<std::vector<int>> answer;
+    auto callback = [&answer](int v) {
+        answer.back().push_back(v);
+    };
+    for (int v = 0; v < verts_; v++) {
+        if (parent_[v] == -1) {
+            answer.push_back(std::vector<int>());
+            answer.back().push_back(v);
+            Dfs(v, callback);
+        }
+    };
+    return answer;
 }

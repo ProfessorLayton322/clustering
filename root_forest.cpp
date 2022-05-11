@@ -5,6 +5,28 @@
 #include <utility>
 #include "root_forest.h"
 
+float VolumeNaive(const std::vector<Matrix>& points, const std::vector<int>& clusterIndexes) {
+    if (clusterIndexes.empty()) {
+        return 0;
+    }
+    size_t n = clusterIndexes.size();
+    Matrix center = points[clusterIndexes[0]];
+    for (int i = 1; i < n; i++) {
+        center += points[clusterIndexes[i]];
+    }
+    float inv_size = 1.0f / (float)n;
+    center *= inv_size;
+    Matrix diff = points[clusterIndexes[0]] - center;
+    Matrix covariance = diff * diff.transpose();
+    for (int i = 1; i < n; i++) {
+        diff = points[clusterIndexes[i]] - center;
+        covariance += diff * diff.transpose();
+    }
+    covariance *= inv_size;
+    float det = covariance.determinant();
+    return (det >= 0)? std::sqrt(det) : 0;
+}
+
 RootForest::RootForest(const Graph& other): verts_(other.Points().size()), parent_(verts_, -1), graph_(other.GetGraph()), points_(verts_), sumDP_(verts_), transposeDP_(verts_), sizeDP_(verts_) {
     size_t dim = other.Points()[0].size();
     for (int i = 0; i < verts_; i++) {
@@ -208,4 +230,29 @@ std::vector<std::vector<int>> RootForest::GetClustering() const {
         }
     };
     return answer;
+}
+
+#include <iostream>    
+using std::cout;
+using std::endl;
+
+bool RootForest::CheckVolumeValidity() const {
+    auto clustering = GetClustering();
+    for (auto& cluster : clustering) {
+        float correctVolume = VolumeNaive(points_, cluster);
+        int root = -1;
+        for (int v : cluster) {
+            if (parent_[v] == -1) {
+                root = v;
+                break;
+            }
+        }
+        float assumedVolume = GetClusterVolume(root);
+        if (std::abs(assumedVolume - correctVolume) > 1e-2) {
+            cout << "Something is wrong" << endl;
+            cout << correctVolume << endl << assumedVolume << endl;
+            return false;
+        }
+    }
+    return true;
 }

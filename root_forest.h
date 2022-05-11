@@ -8,6 +8,8 @@
 
 using Matrix = Eigen::MatrixXf;
 
+float VolumeNaive(std::vector<Matrix>& points, std::vector<int>& clusterIndexes);
+
 class RootForest {
 public:
 
@@ -37,6 +39,9 @@ public:
 
     //Cut out a subtree
     void SeparateSubtree(int oldRoot, int newRoot);
+
+    //Debug
+    bool CheckVolumeValidity() const;
 
 private:
 

@@ -42,27 +42,26 @@ void PrintClusters(const std::vector<std::vector<int>>& clustering) {
 }
 
 int main(int argc, char* argv[]) {
+
     freopen(argv[1], "r", stdin);
     float ratio = atof(argv[2]);
-    int clustersDesired = atoi(argv[3]);
 
     auto graph = ReadGraph();
-    float treshold = graph.GetWeight() * ratio;
     
     RootForest forest(graph);
 
     int cutByTreshold = 0, cutByVolume = 0;
 
-    for (int i = 0; i < clustersDesired; i++) {
-        int toBeCut = forest.GetBiggestCluster(100);
+    while (forest.LargestCluster().first >= 3e5) {
+        int toBeCut = forest.GetBiggestCluster(100000);
         if (toBeCut == -1) {
             break;
         }
-        if (forest.SeparateByTreshold(toBeCut, treshold)) {
+        if (forest.SeparateByRatio(toBeCut, ratio, 10000)) {
             cutByTreshold++;
             continue;
         }
-        if (!forest.SeparateByVolume(toBeCut)) {
+        if (!forest.SeparateByVolume(toBeCut, 10000)) {
             cout << "Cant split by volume" << endl;
             return 1;
         }
@@ -102,7 +101,7 @@ int main(int argc, char* argv[]) {
             new_points.push_back(points[i]);
         }
     }
-    cout << new_points.size() << endl;
+    cout << new_points.size() << " " << 16 << endl;
     for (size_t i = 0; i < new_points.size(); i++) {
         for (float f : new_points[i]) {
             cout << f << " ";

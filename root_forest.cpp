@@ -129,9 +129,7 @@ void RootForest::SeparateSubtree(int oldRoot, int newRoot) {
 
 template<typename Callback>
 void RootForest::Dfs(int v, const Callback& edgeCallback) const {
-    if (parent_[v] != -1) {
-        edgeCallback(v);
-    }
+    edgeCallback(v);
     for (int u : graph_[v]) {
         Dfs(u, edgeCallback);
     }
@@ -142,11 +140,17 @@ float Distance(const Matrix& A, const Matrix& B) {
     return diff.norm();
 }
 
-bool RootForest::SeparateByTreshold(int clusterRoot, float treshold) {
+bool RootForest::SeparateByTreshold(int clusterRoot, float treshold, int minimalSize) {
     int optimalCut = -1;
     float maxWeight = 0;
-    auto callback = [&optimalCut, &maxWeight, &treshold, this](int v) {
+    auto callback = [&optimalCut, &maxWeight, clusterRoot, minimalSize, treshold, this](int v) {
         int prev = parent_[v];
+        if (prev == -1) {
+            return;
+        }
+        if (sizeDP_[v] < minimalSize || sizeDP_[clusterRoot] - sizeDP_[v] < minimalSize) {
+            return;
+        }
         float distance = Distance(points_[v], points_[prev]);
         if (distance >= treshold && distance > maxWeight) {
             optimalCut = v;
@@ -161,11 +165,17 @@ bool RootForest::SeparateByTreshold(int clusterRoot, float treshold) {
     return true;
 }
 
-bool RootForest::SeparateByRatio(int clusterRoot, float ratio) {
+bool RootForest::SeparateByRatio(int clusterRoot, float ratio, int minimalSize) {
     int optimalCut = -1;
     float maxWeight = 0;
-    auto callback = [&optimalCut, &maxWeight, &ratio, this](int v) {
+    auto callback = [&optimalCut, &maxWeight, clusterRoot, minimalSize, ratio, this](int v) {
         int prev = parent_[v];
+        if (prev == -1) {
+            return;
+        }
+        if (sizeDP_[v] < minimalSize || sizeDP_[clusterRoot] - sizeDP_[v] < minimalSize) {
+            return;
+        }
         float distance = Distance(points_[v], points_[prev]);
         float neighbourSum = 0;
         int neighbourNumber = 0;
@@ -195,10 +205,21 @@ bool RootForest::SeparateByRatio(int clusterRoot, float ratio) {
     return true;
 }
 
-bool RootForest::SeparateByVolume(int clusterRoot) {
+#include <iostream>    
+using std::cout;
+using std::endl;
+
+bool RootForest::SeparateByVolume(int clusterRoot, int minimalSize) {    
+//    cout << sizeDP_[clusterRoot] << endl;
     int optimalCut = -1;
     float optimalVolume = FLT_MAX;
-    auto callback = [&optimalCut, &optimalVolume, clusterRoot, this](int v) {
+    auto callback = [&optimalCut, &optimalVolume, clusterRoot, minimalSize, this](int v) {
+        if (v == clusterRoot) {
+            return;
+        }
+        if (sizeDP_[v] < minimalSize || sizeDP_[clusterRoot] - sizeDP_[v] < minimalSize) {
+            return;
+        }
         auto transposedSum = transposeDP_[clusterRoot] - transposeDP_[v];
         auto plainSum = sumDP_[clusterRoot] - sumDP_[v];
         int size = sizeDP_[clusterRoot] - sizeDP_[v];
@@ -225,16 +246,11 @@ std::vector<std::vector<int>> RootForest::GetClustering() const {
     for (int v = 0; v < verts_; v++) {
         if (parent_[v] == -1) {
             answer.push_back(std::vector<int>());
-            answer.back().push_back(v);
             Dfs(v, callback);
         }
     };
     return answer;
 }
-
-#include <iostream>    
-using std::cout;
-using std::endl;
 
 bool RootForest::CheckVolumeValidity() const {
     auto clustering = GetClustering();
@@ -255,4 +271,13 @@ bool RootForest::CheckVolumeValidity() const {
         }
     }
     return true;
+}
+
+std::pair<int, int> RootForest::LargestCluster() const {
+    std::pair<int, int> answer = {0, -1};
+    for (auto it = clustersQueue_.begin(); it != clustersQueue_.end(); ++it) {
+        int root = it->second;
+        answer = std::max(answer, {sizeDP_[root], root});
+    }
+    return answer;
 }

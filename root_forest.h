@@ -20,13 +20,13 @@ public:
     int GetBiggestCluster(int minimalSize) const;
 
     //Cut the cluster by Criterion 1 with given treshold
-    bool SeparateByTreshold(int clusterRoot, float treshold);
+    bool SeparateByTreshold(int clusterRoot, float treshold, int minimalSize);
 
     //Cut the cluster by Criterion 2 with given raio
-    bool SeparateByRatio(int clusterRoot, float ratio);
+    bool SeparateByRatio(int clusterRoot, float ratio, int minimalSize);
 
     //Cut the cluster by criterion  3 (minimizing total fuzzy volume)
-    bool SeparateByVolume(int clusterRoot);
+    bool SeparateByVolume(int clusterRoot, int minimalSize);
 
     //Return clusters fuzzy volume
     float GetClusterVolume(int clusterRoot) const;
@@ -39,6 +39,9 @@ public:
 
     //Cut out a subtree
     void SeparateSubtree(int oldRoot, int newRoot);
+
+    //Return cluster with the most vertices and it's size
+    std::pair<int, int> LargestCluster() const;
 
     //Debug
     bool CheckVolumeValidity() const;
@@ -67,4 +70,5 @@ private:
     std::vector<Matrix> sumDP_;
     std::vector<Matrix> transposeDP_;
     std::vector<int> sizeDP_;
+
 };

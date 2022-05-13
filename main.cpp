@@ -43,6 +43,23 @@ void PrintClusters(const std::vector<std::vector<int>>& clustering) {
 
 int main(int argc, char* argv[]) {
 
+    Matrix m(3, 3);
+    m <<
+    1, 2, 3,
+    4, 5, 6,
+    7, 8, 10;
+
+    cout << m << endl << endl;
+    cout << m.row(1) << endl << endl;
+    
+    cout << m.row(1).rows() << endl;
+    
+    Matrix res = m.array().pow(2.0f);
+    cout << res << endl << endl;
+
+    cout << m.inverse() << endl;
+    return 0;
+
     freopen(argv[1], "r", stdin);
     float ratio = atof(argv[2]);
 

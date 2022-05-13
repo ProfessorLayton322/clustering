@@ -4,9 +4,7 @@
 #include <algorithm>
 #include <set>
 #include "graph.h"
-#include "Eigen/Dense"
-
-using Matrix = Eigen::MatrixXf;
+#include "matrix.h"
 
 float VolumeNaive(std::vector<Matrix>& points, std::vector<int>& clusterIndexes);
 

@@ -7,7 +7,9 @@ public:
 
     GathGevaCalculator(size_t size, size_t clusters, size_t dim, const std::vector<Matrix>& points, const std::vector<std::vector<int>>& clustering);
 
-    void Iterate(float exponent);
+    float Iterate(float exponent);
+
+    int Recluster(float exponent, float tolerance, int maxIterations = 1000);
 
     size_t Size() const;
 
@@ -17,7 +19,7 @@ public:
 
     const Matrix& Points() const;
 
-    std::vector<int> GetClustering() const;
+    std::vector<std::vector<int>> GetClustering() const;
 private:
 
     Matrix U_;
@@ -25,4 +27,5 @@ private:
 
     size_t n_;
     size_t c_;
+    size_t dim_;
 };

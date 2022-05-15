@@ -1,9 +1,14 @@
+#include <exception>
+#include <utility>
+#include <algorithm>
+#include <math.h>
+#include <cmath>
 #include "gath_geva_calculator.h"
 
 GathGevaCalculator::GathGevaCalculator(size_t size, size_t clusters, size_t dim, 
                                        const std::vector<Matrix>& points,
                                        const std::vector<std::vector<int>>& clustering):
-                                       n_(size), c_(clusters), U_(clusters, size), points_(size, dim) {
+                                       n_(size), c_(clusters), dim_(dim), U_(clusters, size), points_(size, dim) {
     for (int i = 0; i < c_; i++) {
         for (int j = 0; j < n_; j++) {
             U_(i, j) = 0;
@@ -21,7 +26,7 @@ GathGevaCalculator::GathGevaCalculator(size_t size, size_t clusters, size_t dim,
 
 GathGevaCalculator::GathGevaCalculator(size_t size, size_t clusters, size_t dim,
                                        const RootForest& forest):
-                                       n_(size), c_(clusters), U_(clusters, size), points_(size, dim) {
+                                       n_(size), c_(clusters), dim_(dim_), U_(clusters, size), points_(size, dim) {
     auto& points = forest.Points();
     auto clustering = forest.GetClustering();
     for (int i = 0; i < c_; i++) {
@@ -54,18 +59,95 @@ const Matrix& GathGevaCalculator::U() const {
 const Matrix& GathGevaCalculator::Points() const {
     return points_;
 }
-
-void GathGevaCalculator::Iterate(float exponent) {
-    /*
-    auto weightedPartition = U_.array().pow(exponent);
-    auto centers = weightedPartition * points_;
+/*
+#include <iostream>
+using std::cout;
+using std::endl;
+*/
+float GathGevaCalculator::Iterate(float exponent) {
+    if (exponent <= 1.0f) {
+        throw std::invalid_argument("Exponent should not be 1 or less");
+    }
+    Matrix weightedPartition = U_.array().pow(exponent);
+    std::vector<float> weight(c_);
+    std::vector<bool> empty(c_);
     for (int i = 0; i < c_; i++) {
-        float coef = weightedPartition.row(i).sum();
-        if (std::abs(coef) <= 1e-4) {
+        weight[i] = weightedPartition.row(i).sum();
+        empty[i] = (std::abs(weight[i]) <= 1e-5);
+    }
+
+    Matrix centers = weightedPartition * points_;
+    for (int i = 0; i < c_; i++) {
+        if (empty[i]) {
+            continue;
+        } else {
+            for (int j = 0; j < dim_; j++) {
+                centers(i, j) /= weight[i];
+            }
+        }
+    }
+    std::vector<Matrix> covariance;
+    covariance.reserve(c_);
+    for (int i = 0; i < c_; i++) {
+        covariance.emplace_back(dim_, dim_);
+        covariance[i] *= 0.0f;
+        if (empty[i]) {
             continue;
         }
-
+        for (int j = 0; j < n_; j++) {
+            Matrix diff = points_.row(j) - centers.row(i);
+            covariance[i] += weightedPartition(i, j) * (diff.transpose() * diff);
+        }
+        covariance[i] /= weight[i];
+        float det = covariance[i].determinant();
+        if (det < -1e-3) {
+            throw std::invalid_argument("Matrix has a negative det");
+        }
+        if (std::abs(det) < 1e-3) {
+            throw std::invalid_argument("Matrix has zero det");
+        }
     }
-    */
-    //TODO
+    auto ClusterDistance = [&](int cluster, int point) -> float {
+        float coef = std::sqrt(covariance[cluster].determinant()) / weight[cluster];
+        Matrix diff = points_.row(point) - centers.row(cluster);
+        Matrix product = diff * covariance[cluster].inverse() * diff.transpose();
+        return coef * exp(product(0, 0) / 2.0f);
+    };
+    Matrix old(U_);
+    float power = 1.0f / (exponent - 1.0f);
+    for (int i = 0; i < n_; i++) {
+        std::vector<float> temp(c_);
+        float denominator = 0;
+        for (int j = 0; j < c_; j++) {
+            temp[j] = 1.0f / pow(ClusterDistance(j, i), power);
+            denominator += temp[j];
+        }
+        for (int j = 0; j < c_; j++) {
+            U_(j, i) = temp[j] / denominator;
+        }
+    }
+    old -= U_;
+    return old.norm();
+}
+
+int GathGevaCalculator::Recluster(float exponent, float tolerance, int maxIterations) {
+    int iteration;
+    for (iteration = 1; iteration <= maxIterations; iteration++) {
+        if (Iterate(exponent) <= tolerance) {
+            break;
+        }
+    }
+    return iteration;
+}
+
+std::vector<std::vector<int>> GathGevaCalculator::GetClustering() const {
+    std::vector<std::vector<int>> answer(c_);
+    for (int i = 0; i < n_; i++) {
+        auto best = std::make_pair(U_(0, i), 0);
+        for (int j = 1; j < c_; j++) {
+            best = std::max(best, std::make_pair(U_(j, i), j));
+        }
+        answer[best.second].push_back(i);
+    }
+    return answer;
 }

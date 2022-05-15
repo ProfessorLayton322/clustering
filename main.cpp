@@ -11,6 +11,7 @@
 #include "generate_tests.h"
 #include "prim_naive.h"
 #include "root_forest.h"
+#include "gath_geva_calculator.h"
 
 /*
 void MeasureTime(size_t n, size_t dim, int threads) {
@@ -43,21 +44,45 @@ void PrintClusters(const std::vector<std::vector<int>>& clustering) {
 
 int main(int argc, char* argv[]) {
 
-    Matrix m(3, 3);
-    m <<
-    1, 2, 3,
-    4, 5, 6,
-    7, 8, 10;
+    freopen(argv[1], "r", stdin);
+    size_t dim = atoi(argv[3]);
 
-    cout << m << endl << endl;
-    cout << m.row(1) << endl << endl;
-    
-    cout << m.row(1).rows() << endl;
-    
-    Matrix res = m.array().pow(2.0f);
-    cout << res << endl << endl;
+    int n;
+    cin >> n;
 
-    cout << m.inverse() << endl;
+    std::vector<Matrix> points;
+    for (int i = 0; i < n; i++) {
+        points.emplace_back(dim, 1);
+        for (int j = 0; j < dim; j++) {
+            cin >> points[i](j, 0);
+        }
+    }
+
+    freopen(argv[2], "r", stdin);
+    int c;
+    cin >> c >> c >> c;
+    
+    std::vector<std::vector<int> > clustering(c);
+    for (int i = 0; i < c; i++) {
+        int k;
+        cin >> k;
+        clustering[i].resize(k);
+    }
+    for (int i = 0; i < c; i++) {
+        for (int j = 0; j < clustering[i].size(); j++) {
+            cin >> clustering[i][j];
+        }
+    }
+    float exponent = 2;
+    GathGevaCalculator gg(n, c, dim, points, clustering);
+    gg.Iterate(exponent);
+
+    /*
+    cout << gg.Recluster(2.0f, 0.0001) << " iterations" << endl;
+    cout << gg.U() << endl << endl;
+    auto final_clustering = gg.GetClustering();
+    PrintClusters(final_clustering);
+    */
     return 0;
 
     freopen(argv[1], "r", stdin);

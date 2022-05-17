@@ -5,10 +5,11 @@
 #include <cmath>
 #include "gath_geva_calculator.h"
 
+/*
 #include <iostream>
 using std::cout;
 using std::endl;
-
+*/
 GathGevaCalculator::GathGevaCalculator(size_t size, size_t clusters, size_t dim, 
                                        const std::vector<Matrix>& points,
                                        const std::vector<std::vector<int>>& clustering):
@@ -88,7 +89,6 @@ double GathGevaCalculator::Iterate(double exponent) {
     }
     std::vector<Matrix> covariance;
     covariance.reserve(c_);
-    int tmp = 0;
     for (int i = 0; i < c_; i++) {
         covariance.emplace_back(dim_, dim_);
         covariance[i] *= 0.0f;
@@ -99,32 +99,26 @@ double GathGevaCalculator::Iterate(double exponent) {
             Matrix diff = points_.row(j) - centers.row(i);
             covariance[i] += weightedPartition(i, j) * (diff.transpose() * diff);
         }
-        cout << "Previous det is " << covariance[i].determinant() << endl;
         covariance[i] /= weight[i];
         double det = covariance[i].determinant();
         if (det < -1e-3) {
             throw std::invalid_argument("Matrix has a negative det");
         }
-        if (std::abs(det) < 1e-3) {
-            tmp++;
-            cout << det << endl;
-            /*
-            cout << covariance[i] << endl << endl;
-            throw std::invalid_argument("Matrix has zero det");
-            */
-        }
     }
-    cout << tmp << endl;
-    if (tmp) {
-        throw std::invalid_argument("Matrix has zero det");
+    std::vector<double> sqrtDeterminant(c_);
+    std::vector<Matrix> inverseMatrix;
+    inverseMatrix.reserve(c_);
+    for (int i = 0; i < c_; i++) {
+        sqrtDeterminant[i] = std::sqrt(covariance[i].determinant());
+        inverseMatrix.push_back(covariance[i].inverse());
     }
     auto ClusterDistance = [&](int cluster, int point) -> double {
         if (empty[cluster]) {
             return 0;
         }
-        double coef = std::sqrt(covariance[cluster].determinant()) / weight[cluster];
+        double coef = sqrtDeterminant[cluster] * (double)n_ / weight[cluster];
         Matrix diff = points_.row(point) - centers.row(cluster);
-        Matrix product = diff * covariance[cluster].inverse() * diff.transpose();
+        Matrix product = diff * inverseMatrix[cluster] * diff.transpose();
         return coef * exp(product(0, 0) / 2.0f);
     };
     Matrix old(U_);

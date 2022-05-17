@@ -44,6 +44,8 @@ void PrintClusters(const std::vector<std::vector<int>>& clustering) {
 
 int main(int argc, char* argv[]) {
 
+    /*
+    Eigen::setNbThreads(atoi(argv[4]));
     freopen(argv[1], "r", stdin);
     size_t dim = atoi(argv[3]);
 
@@ -79,47 +81,42 @@ int main(int argc, char* argv[]) {
     GathGevaCalculator gg(n, c, dim, points, clustering);
     gg.Iterate(exponent);
 
-    cout << gg.Recluster(2.0f, 0.0001) << " iterations" << endl;
+    return 0;
+
+    cout << gg.Recluster(2.0f, 0.0001, 30) << " iterations" << endl;
     cout << gg.U() << endl << endl;
     auto final_clustering = gg.GetClustering();
     PrintClusters(final_clustering);
     return 0;
 
+    */
+
     /*
     freopen(argv[1], "r", stdin);
-    float ratio = atof(argv[2]);
+    int clusters = atoi(argv[2]);
 
     auto graph = ReadGraph();
     
     RootForest forest(graph);
 
-    int cutByTreshold = 0, cutByVolume = 0;
-
-    while (forest.LargestCluster().first >= 3e5) {
-        int toBeCut = forest.GetBiggestCluster(100000);
+    for (int i = 0; i < clusters - 1; i++) {
+        int toBeCut = forest.GetBiggestCluster(1000);
         if (toBeCut == -1) {
             break;
         }
-        if (forest.SeparateByRatio(toBeCut, ratio, 10000)) {
-            cutByTreshold++;
-            continue;
-        }
-        if (!forest.SeparateByVolume(toBeCut, 10000)) {
+        if (!forest.SeparateByVolume(toBeCut, 100)) {
             cout << "Cant split by volume" << endl;
             return 1;
         }
-        cutByVolume++;
     }
-
-    cout << cutByTreshold << " " << cutByVolume << endl;
 
     auto result = forest.GetClustering();
     PrintClusters(result);
     */
 
-
-    /*
     freopen(argv[1], "r", stdin);
+    int threads = atoi(argv[2]);
+
     std::vector<Point> points;
     Point p;
     p.reserve(16);
@@ -154,7 +151,7 @@ int main(int argc, char* argv[]) {
         cout << endl;
     }
     MSTCalculator mstCalculator(new_points);
-    auto graph = mstCalculator.Calculate(40).GetGraph();
+    auto graph = mstCalculator.Calculate(threads).GetGraph();
     for (size_t i = 0; i < graph.size(); i++) {
         cout << graph[i].size() << endl;
         for (size_t u : graph[i]) {
@@ -163,5 +160,4 @@ int main(int argc, char* argv[]) {
         cout << endl;
     }
     return 0;
-    */
 }

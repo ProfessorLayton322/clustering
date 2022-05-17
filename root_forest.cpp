@@ -5,7 +5,7 @@
 #include <utility>
 #include "root_forest.h"
 
-float VolumeNaive(const std::vector<Matrix>& points, const std::vector<int>& clusterIndexes) {
+double VolumeNaive(const std::vector<Matrix>& points, const std::vector<int>& clusterIndexes) {
     if (clusterIndexes.empty()) {
         return 0;
     }
@@ -14,7 +14,7 @@ float VolumeNaive(const std::vector<Matrix>& points, const std::vector<int>& clu
     for (int i = 1; i < n; i++) {
         center += points[clusterIndexes[i]];
     }
-    float inv_size = 1.0f / (float)n;
+    double inv_size = 1.0f / (double)n;
     center *= inv_size;
     Matrix diff = points[clusterIndexes[0]] - center;
     Matrix covariance = diff * diff.transpose();
@@ -23,7 +23,7 @@ float VolumeNaive(const std::vector<Matrix>& points, const std::vector<int>& clu
         covariance += diff * diff.transpose();
     }
     covariance *= inv_size;
-    float det = covariance.determinant();
+    double det = covariance.determinant();
     return (det >= 0)? std::sqrt(det) : 0;
 }
 
@@ -73,15 +73,15 @@ void RootForest::UpdateDP(int clusterRoot) {
     }
 }
 
-float RootForest::CalculateVolume(const Matrix& transposedSum, const Matrix& plainSum, int size) const {
-    float invSize = 1.0f / (float)size;
+double RootForest::CalculateVolume(const Matrix& transposedSum, const Matrix& plainSum, int size) const {
+    double invSize = 1.0f / (double)size;
     auto clusterCenter = plainSum * invSize;
     auto covarianceMatrix = transposedSum * invSize - clusterCenter * clusterCenter.transpose();
-    float det = covarianceMatrix.determinant();
+    double det = covarianceMatrix.determinant();
     return (det >= 0.f)? std::sqrt(det) : 0.0f;
 }
 
-float RootForest::GetClusterVolume(int clusterRoot) const {
+double RootForest::GetClusterVolume(int clusterRoot) const {
     if (parent_[clusterRoot] != -1) {
         throw std::invalid_argument("Given vertex is not a root of a cluster");
     }
@@ -104,7 +104,7 @@ int RootForest::GetBiggestCluster(int minimalSize) const {
 
 void RootForest::FetchCluster(int clusterRoot) {
     UpdateDP(clusterRoot);
-    float volume = GetClusterVolume(clusterRoot);
+    double volume = GetClusterVolume(clusterRoot);
     clustersQueue_.insert({volume, clusterRoot});
 }
 
@@ -135,14 +135,14 @@ void RootForest::Dfs(int v, const Callback& edgeCallback) const {
     }
 }
 
-float Distance(const Matrix& A, const Matrix& B) {
+double Distance(const Matrix& A, const Matrix& B) {
     auto diff = A - B;
     return diff.norm();
 }
 
-bool RootForest::SeparateByTreshold(int clusterRoot, float treshold, int minimalSize) {
+bool RootForest::SeparateByTreshold(int clusterRoot, double treshold, int minimalSize) {
     int optimalCut = -1;
-    float maxWeight = 0;
+    double maxWeight = 0;
     auto callback = [&optimalCut, &maxWeight, clusterRoot, minimalSize, treshold, this](int v) {
         int prev = parent_[v];
         if (prev == -1) {
@@ -151,7 +151,7 @@ bool RootForest::SeparateByTreshold(int clusterRoot, float treshold, int minimal
         if (sizeDP_[v] < minimalSize || sizeDP_[clusterRoot] - sizeDP_[v] < minimalSize) {
             return;
         }
-        float distance = Distance(points_[v], points_[prev]);
+        double distance = Distance(points_[v], points_[prev]);
         if (distance >= treshold && distance > maxWeight) {
             optimalCut = v;
             maxWeight = distance;
@@ -165,9 +165,9 @@ bool RootForest::SeparateByTreshold(int clusterRoot, float treshold, int minimal
     return true;
 }
 
-bool RootForest::SeparateByRatio(int clusterRoot, float ratio, int minimalSize) {
+bool RootForest::SeparateByRatio(int clusterRoot, double ratio, int minimalSize) {
     int optimalCut = -1;
-    float maxWeight = 0;
+    double maxWeight = 0;
     auto callback = [&optimalCut, &maxWeight, clusterRoot, minimalSize, ratio, this](int v) {
         int prev = parent_[v];
         if (prev == -1) {
@@ -176,8 +176,8 @@ bool RootForest::SeparateByRatio(int clusterRoot, float ratio, int minimalSize) 
         if (sizeDP_[v] < minimalSize || sizeDP_[clusterRoot] - sizeDP_[v] < minimalSize) {
             return;
         }
-        float distance = Distance(points_[v], points_[prev]);
-        float neighbourSum = 0;
+        double distance = Distance(points_[v], points_[prev]);
+        double neighbourSum = 0;
         int neighbourNumber = 0;
         if (parent_[prev] != -1) {
             neighbourSum += Distance(points_[prev], points_[parent_[prev]]);
@@ -191,7 +191,7 @@ bool RootForest::SeparateByRatio(int clusterRoot, float ratio, int minimalSize) 
             neighbourSum += Distance(points_[v], points_[u]);
             neighbourNumber++;
         }
-        float avgNeighbour = neighbourSum / (float)neighbourNumber * ratio;
+        double avgNeighbour = neighbourSum / (double)neighbourNumber * ratio;
         if (distance >= avgNeighbour && distance > maxWeight) {
             optimalCut = v;
             maxWeight = distance;
@@ -212,7 +212,7 @@ using std::endl;
 bool RootForest::SeparateByVolume(int clusterRoot, int minimalSize) {    
 //    cout << sizeDP_[clusterRoot] << endl;
     int optimalCut = -1;
-    float optimalVolume = FLT_MAX;
+    double optimalVolume = FLT_MAX;
     auto callback = [&optimalCut, &optimalVolume, clusterRoot, minimalSize, this](int v) {
         if (v == clusterRoot) {
             return;
@@ -223,8 +223,8 @@ bool RootForest::SeparateByVolume(int clusterRoot, int minimalSize) {
         auto transposedSum = transposeDP_[clusterRoot] - transposeDP_[v];
         auto plainSum = sumDP_[clusterRoot] - sumDP_[v];
         int size = sizeDP_[clusterRoot] - sizeDP_[v];
-        float firstVolume = CalculateVolume(transposedSum, plainSum, size);
-        float secondVolume = CalculateVolume(transposeDP_[v], sumDP_[v], sizeDP_[v]);
+        double firstVolume = CalculateVolume(transposedSum, plainSum, size);
+        double secondVolume = CalculateVolume(transposeDP_[v], sumDP_[v], sizeDP_[v]);
         if (firstVolume + secondVolume <= optimalVolume) {
             optimalCut = v;
             optimalVolume = firstVolume + secondVolume;
@@ -255,7 +255,7 @@ std::vector<std::vector<int>> RootForest::GetClustering() const {
 bool RootForest::CheckVolumeValidity() const {
     auto clustering = GetClustering();
     for (auto& cluster : clustering) {
-        float correctVolume = VolumeNaive(points_, cluster);
+        double correctVolume = VolumeNaive(points_, cluster);
         int root = -1;
         for (int v : cluster) {
             if (parent_[v] == -1) {
@@ -263,7 +263,7 @@ bool RootForest::CheckVolumeValidity() const {
                 break;
             }
         }
-        float assumedVolume = GetClusterVolume(root);
+        double assumedVolume = GetClusterVolume(root);
         if (std::abs(assumedVolume - correctVolume) > 1e-2) {
             cout << "Something is wrong" << endl;
             cout << correctVolume << endl << assumedVolume << endl;

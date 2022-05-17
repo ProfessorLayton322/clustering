@@ -5,6 +5,10 @@
 #include <cmath>
 #include "gath_geva_calculator.h"
 
+#include <iostream>
+using std::cout;
+using std::endl;
+
 GathGevaCalculator::GathGevaCalculator(size_t size, size_t clusters, size_t dim, 
                                        const std::vector<Matrix>& points,
                                        const std::vector<std::vector<int>>& clustering):
@@ -59,17 +63,13 @@ const Matrix& GathGevaCalculator::U() const {
 const Matrix& GathGevaCalculator::Points() const {
     return points_;
 }
-/*
-#include <iostream>
-using std::cout;
-using std::endl;
-*/
-float GathGevaCalculator::Iterate(float exponent) {
+
+double GathGevaCalculator::Iterate(double exponent) {
     if (exponent <= 1.0f) {
         throw std::invalid_argument("Exponent should not be 1 or less");
     }
     Matrix weightedPartition = U_.array().pow(exponent);
-    std::vector<float> weight(c_);
+    std::vector<double> weight(c_);
     std::vector<bool> empty(c_);
     for (int i = 0; i < c_; i++) {
         weight[i] = weightedPartition.row(i).sum();
@@ -88,6 +88,7 @@ float GathGevaCalculator::Iterate(float exponent) {
     }
     std::vector<Matrix> covariance;
     covariance.reserve(c_);
+    int tmp = 0;
     for (int i = 0; i < c_; i++) {
         covariance.emplace_back(dim_, dim_);
         covariance[i] *= 0.0f;
@@ -98,26 +99,39 @@ float GathGevaCalculator::Iterate(float exponent) {
             Matrix diff = points_.row(j) - centers.row(i);
             covariance[i] += weightedPartition(i, j) * (diff.transpose() * diff);
         }
+        cout << "Previous det is " << covariance[i].determinant() << endl;
         covariance[i] /= weight[i];
-        float det = covariance[i].determinant();
+        double det = covariance[i].determinant();
         if (det < -1e-3) {
             throw std::invalid_argument("Matrix has a negative det");
         }
         if (std::abs(det) < 1e-3) {
+            tmp++;
+            cout << det << endl;
+            /*
+            cout << covariance[i] << endl << endl;
             throw std::invalid_argument("Matrix has zero det");
+            */
         }
     }
-    auto ClusterDistance = [&](int cluster, int point) -> float {
-        float coef = std::sqrt(covariance[cluster].determinant()) / weight[cluster];
+    cout << tmp << endl;
+    if (tmp) {
+        throw std::invalid_argument("Matrix has zero det");
+    }
+    auto ClusterDistance = [&](int cluster, int point) -> double {
+        if (empty[cluster]) {
+            return 0;
+        }
+        double coef = std::sqrt(covariance[cluster].determinant()) / weight[cluster];
         Matrix diff = points_.row(point) - centers.row(cluster);
         Matrix product = diff * covariance[cluster].inverse() * diff.transpose();
         return coef * exp(product(0, 0) / 2.0f);
     };
     Matrix old(U_);
-    float power = 1.0f / (exponent - 1.0f);
+    double power = 1.0f / (exponent - 1.0f);
     for (int i = 0; i < n_; i++) {
-        std::vector<float> temp(c_);
-        float denominator = 0;
+        std::vector<double> temp(c_);
+        double denominator = 0;
         for (int j = 0; j < c_; j++) {
             temp[j] = 1.0f / pow(ClusterDistance(j, i), power);
             denominator += temp[j];
@@ -130,7 +144,7 @@ float GathGevaCalculator::Iterate(float exponent) {
     return old.norm();
 }
 
-int GathGevaCalculator::Recluster(float exponent, float tolerance, int maxIterations) {
+int GathGevaCalculator::Recluster(double exponent, double tolerance, int maxIterations) {
     int iteration;
     for (iteration = 1; iteration <= maxIterations; iteration++) {
         if (Iterate(exponent) <= tolerance) {

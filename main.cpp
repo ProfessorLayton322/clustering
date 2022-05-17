@@ -61,6 +61,8 @@ int main(int argc, char* argv[]) {
     freopen(argv[2], "r", stdin);
     int c;
     cin >> c >> c >> c;
+
+    cout << n << " " << c << " " << dim << endl << endl;
     
     std::vector<std::vector<int> > clustering(c);
     for (int i = 0; i < c; i++) {
@@ -73,18 +75,17 @@ int main(int argc, char* argv[]) {
             cin >> clustering[i][j];
         }
     }
-    float exponent = 2;
+    double exponent = 2;
     GathGevaCalculator gg(n, c, dim, points, clustering);
     gg.Iterate(exponent);
 
-    /*
     cout << gg.Recluster(2.0f, 0.0001) << " iterations" << endl;
     cout << gg.U() << endl << endl;
     auto final_clustering = gg.GetClustering();
     PrintClusters(final_clustering);
-    */
     return 0;
 
+    /*
     freopen(argv[1], "r", stdin);
     float ratio = atof(argv[2]);
 
@@ -114,6 +115,8 @@ int main(int argc, char* argv[]) {
 
     auto result = forest.GetClustering();
     PrintClusters(result);
+    */
+
 
     /*
     freopen(argv[1], "r", stdin);
@@ -151,7 +154,7 @@ int main(int argc, char* argv[]) {
         cout << endl;
     }
     MSTCalculator mstCalculator(new_points);
-    auto graph = mstCalculator.Calculate(40);
+    auto graph = mstCalculator.Calculate(40).GetGraph();
     for (size_t i = 0; i < graph.size(); i++) {
         cout << graph[i].size() << endl;
         for (size_t u : graph[i]) {
@@ -159,6 +162,6 @@ int main(int argc, char* argv[]) {
         }
         cout << endl;
     }
-    */
     return 0;
+    */
 }

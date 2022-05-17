@@ -6,7 +6,7 @@
 #include "graph.h"
 #include "matrix.h"
 
-float VolumeNaive(std::vector<Matrix>& points, std::vector<int>& clusterIndexes);
+double VolumeNaive(std::vector<Matrix>& points, std::vector<int>& clusterIndexes);
 
 class RootForest {
 public:
@@ -18,16 +18,16 @@ public:
     int GetBiggestCluster(int minimalSize) const;
 
     //Cut the cluster by Criterion 1 with given treshold
-    bool SeparateByTreshold(int clusterRoot, float treshold, int minimalSize);
+    bool SeparateByTreshold(int clusterRoot, double treshold, int minimalSize);
 
     //Cut the cluster by Criterion 2 with given raio
-    bool SeparateByRatio(int clusterRoot, float ratio, int minimalSize);
+    bool SeparateByRatio(int clusterRoot, double ratio, int minimalSize);
 
     //Cut the cluster by criterion  3 (minimizing total fuzzy volume)
     bool SeparateByVolume(int clusterRoot, int minimalSize);
 
     //Return clusters fuzzy volume
-    float GetClusterVolume(int clusterRoot) const;
+    double GetClusterVolume(int clusterRoot) const;
 
     //Returns the final partition into clusters
     std::vector<std::vector<int>> GetClustering() const;
@@ -53,13 +53,13 @@ private:
     template<typename Callback>
     void Dfs(int v, const Callback& edgeCallback) const;
 
-    float CalculateVolume(const Matrix& transposedSum, const Matrix& plainSum, int size) const;
+    double CalculateVolume(const Matrix& transposedSum, const Matrix& plainSum, int size) const;
 
     void FetchCluster(int clusterRoot);
     
     size_t verts_;
 
-    std::set<std::pair<float, int>> clustersQueue_;
+    std::set<std::pair<double, int>> clustersQueue_;
 
     std::vector<int> parent_;
     std::vector<std::vector<int>> graph_;

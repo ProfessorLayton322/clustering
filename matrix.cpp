@@ -6,7 +6,7 @@ Matrix GetClusterCenter(const std::vector<Matrix>& points, const std::vector<int
     for (int i = 1; i < n; i++) {
         center += points[clusterIndexes[i]];
     }
-    float inv_size = 1.0f / (float)n;
+    float inv_size = 1.0f / (double)n;
     center *= inv_size;
     return center;
 }

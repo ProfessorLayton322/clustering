@@ -12,6 +12,7 @@
 #include "prim_naive.h"
 #include "root_forest.h"
 #include "gath_geva_calculator.h"
+#include "metric_calculator.h"
 
 /*
 void MeasureTime(size_t n, size_t dim, int threads) {
@@ -45,7 +46,6 @@ void PrintClusters(const std::vector<std::vector<int>>& clustering) {
 int main(int argc, char* argv[]) {
 
     /*
-    Eigen::setNbThreads(atoi(argv[4]));
     freopen(argv[1], "r", stdin);
     size_t dim = atoi(argv[3]);
 
@@ -62,7 +62,7 @@ int main(int argc, char* argv[]) {
 
     freopen(argv[2], "r", stdin);
     int c;
-    cin >> c >> c >> c;
+    cin >> c;
 
     cout << n << " " << c << " " << dim << endl << endl;
     
@@ -79,19 +79,15 @@ int main(int argc, char* argv[]) {
     }
     double exponent = 2;
     GathGevaCalculator gg(n, c, dim, points, clustering);
-    gg.Iterate(exponent);
 
-    return 0;
-
-    cout << gg.Recluster(2.0f, 0.0001, 30) << " iterations" << endl;
-    cout << gg.U() << endl << endl;
+    cout << gg.Recluster(2.0f, 0.0001, 1) << " iterations" << endl;
     auto final_clustering = gg.GetClustering();
     PrintClusters(final_clustering);
     return 0;
-
     */
 
     /*
+
     freopen(argv[1], "r", stdin);
     int clusters = atoi(argv[2]);
 
@@ -112,18 +108,21 @@ int main(int argc, char* argv[]) {
 
     auto result = forest.GetClustering();
     PrintClusters(result);
+
     */
 
     freopen(argv[1], "r", stdin);
-    int threads = atoi(argv[2]);
+    freopen(argv[2], "w+", stdout);
+    int dim = atoi(argv[3]);
+    int threads = atoi(argv[4]);
 
     std::vector<Point> points;
     Point p;
-    p.reserve(16);
+    p.reserve(dim);
     float f;
     while (std::cin >> f) {
         p.push_back(f);
-        if (p.size() == 16) {
+        if (p.size() == dim) {
             points.push_back(p);
             p.clear();
         }
@@ -143,7 +142,7 @@ int main(int argc, char* argv[]) {
             new_points.push_back(points[i]);
         }
     }
-    cout << new_points.size() << " " << 16 << endl;
+    cout << new_points.size() << " " << dim << endl;
     for (size_t i = 0; i < new_points.size(); i++) {
         for (float f : new_points[i]) {
             cout << f << " ";
@@ -152,6 +151,7 @@ int main(int argc, char* argv[]) {
     }
     MSTCalculator mstCalculator(new_points);
     auto graph = mstCalculator.Calculate(threads).GetGraph();
+    cout << graph.size() << endl;
     for (size_t i = 0; i < graph.size(); i++) {
         cout << graph[i].size() << endl;
         for (size_t u : graph[i]) {

@@ -5,11 +5,10 @@
 #include <cmath>
 #include "gath_geva_calculator.h"
 
-/*
 #include <iostream>
 using std::cout;
 using std::endl;
-*/
+
 GathGevaCalculator::GathGevaCalculator(size_t size, size_t clusters, size_t dim, 
                                        const std::vector<Matrix>& points,
                                        const std::vector<std::vector<int>>& clustering):
@@ -75,6 +74,9 @@ double GathGevaCalculator::Iterate(double exponent) {
     for (int i = 0; i < c_; i++) {
         weight[i] = weightedPartition.row(i).sum();
         empty[i] = (std::abs(weight[i]) <= 1e-5);
+        if (empty[i]) {
+            cout << i << " is empty" << endl;
+        }
     }
 
     Matrix centers = weightedPartition * points_;
@@ -104,6 +106,7 @@ double GathGevaCalculator::Iterate(double exponent) {
         if (det < -1e-3) {
             throw std::invalid_argument("Matrix has a negative det");
         }
+        cout << i << " " << det << endl;
     }
     std::vector<double> sqrtDeterminant(c_);
     std::vector<Matrix> inverseMatrix;
@@ -128,8 +131,10 @@ double GathGevaCalculator::Iterate(double exponent) {
         double denominator = 0;
         for (int j = 0; j < c_; j++) {
             temp[j] = 1.0f / pow(ClusterDistance(j, i), power);
+            cout << i << " " << j << " " << temp[j] << endl;
             denominator += temp[j];
         }
+        cout << "HEY " << i << " " << denominator << endl;
         for (int j = 0; j < c_; j++) {
             U_(j, i) = temp[j] / denominator;
         }
@@ -141,9 +146,14 @@ double GathGevaCalculator::Iterate(double exponent) {
 int GathGevaCalculator::Recluster(double exponent, double tolerance, int maxIterations) {
     int iteration;
     for (iteration = 1; iteration <= maxIterations; iteration++) {
-        if (Iterate(exponent) <= tolerance) {
+        double diff = Iterate(exponent);
+        cout << "Difference " << diff << endl;
+        if (diff <= tolerance) {
             break;
         }
+    }
+    if (iteration > maxIterations) {
+        iteration = maxIterations;
     }
     return iteration;
 }

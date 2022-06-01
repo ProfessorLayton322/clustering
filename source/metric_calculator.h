@@ -27,6 +27,8 @@ private:
 
     std::vector<Matrix> points_;
     std::vector<Matrix> centers_;
+    
+    Matrix globalCenter_;
 
     std::vector<std::vector<int>> clustering_;
 };

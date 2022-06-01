@@ -1,5 +1,5 @@
 #include <random>
-#include "point.h"
+#include "prim_thread.h"
 
 std::vector<Point> GenerateTests(size_t n, size_t dim) {
     std::vector<Point> points(n, Point(dim));
@@ -12,4 +12,13 @@ std::vector<Point> GenerateTests(size_t n, size_t dim) {
         }
     }
     return points;
+}
+
+void MeasureTime(size_t n, size_t dim, int threads) {
+    auto points = GenerateTests(n, dim);
+    MSTCalculator mstCalculator(points);
+    time_t seconds = time(NULL);
+    auto graph_threaded = mstCalculator.Calculate(threads);
+    seconds = time(NULL) - seconds;
+    printf("Takes %ld seconds for %d nodes %d dim and %d threads\n", seconds, n, dim, threads);
 }

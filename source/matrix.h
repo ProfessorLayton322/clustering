@@ -1,7 +1,7 @@
 #pragma once
 
 #include "point.h"
-#include "Eigen/Dense"
+#include <Dense>
 
 using Matrix = Eigen::MatrixXd;
 

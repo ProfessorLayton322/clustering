@@ -107,9 +107,11 @@ Graph ReadGraph() {
     std::vector<Point> points(n, Point(dim));
     for (size_t i = 0; i < n; i++) {
         for (size_t j = 0; j < dim; j++) {
-        cin >> points[i][j];
+            cin >> points[i][j];
         }
     }
+
+    cin >> n;
 
     Graph graph(points);
 

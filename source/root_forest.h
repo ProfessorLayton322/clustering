@@ -26,6 +26,8 @@ public:
     //Cut the cluster by criterion  3 (minimizing total fuzzy volume)
     bool SeparateByVolume(int clusterRoot, int minimalSize);
 
+    bool ClusterByVolume(int minimalSize = 1000, int minimalChop = 100);
+
     //Return clusters fuzzy volume
     double GetClusterVolume(int clusterRoot) const;
 

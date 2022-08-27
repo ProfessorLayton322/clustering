@@ -140,7 +140,70 @@ float fvec_L2sqr_avx512(const float* x, const float* y, size_t d) {
     msum3 = _mm_hadd_ps(msum3, msum3);
     return _mm_cvtss_f32(msum3);
 }
+
+float fvec_cosine_avx512(const float* x, const float* y, size_t d) {
+    __m512 msum1 = _mm512_setzero_ps();
+
+    while (d >= 16) {
+        __m512 mx = _mm512_loadu_ps(x);
+        x += 16;
+        __m512 my = _mm512_loadu_ps(y);
+        y += 16;
+        const __m512 a_m_b1 = mx * my;
+        msum1 += a_m_b1;
+        d -= 16;
+    }
+
+    __m256 msum2 = _mm512_extractf32x8_ps(msum1, 1);
+    msum2 += _mm512_extractf32x8_ps(msum1, 0);
+
+    while (d >= 8) {
+        __m256 mx = _mm256_loadu_ps(x);
+        x += 8;
+        __m256 my = _mm256_loadu_ps(y);
+        y += 8;
+        const __m256 a_m_b1 = mx * my;
+        msum2 += a_m_b1;
+        d -= 8;
+    }
+
+    __m128 msum3 = _mm256_extractf128_ps(msum2, 1);
+    msum3 += _mm256_extractf128_ps(msum2, 0);
+
+    if (d >= 4) {
+        __m128 mx = _mm_loadu_ps(x);
+        x += 4;
+        __m128 my = _mm_loadu_ps(y);
+        y += 4;
+        const __m128 a_m_b1 = mx * my;
+        msum3 += a_m_b1;
+        d -= 4;
+    }
+
+    if (d > 0) {
+        __m128 mx = masked_read(d, x);
+        __m128 my = masked_read(d, y);
+        __m128 a_m_b1 = mx * my;
+        msum3 += a_m_b1;
+    }
+
+    msum3 = _mm_hadd_ps(msum3, msum3);
+    msum3 = _mm_hadd_ps(msum3, msum3);
+    return _mm_cvtss_f32(msum3);
+}
 #endif
+
+float ScalarDistance(const Point& a, const Point& b) {
+    assert(a.size() == b.size());
+#ifdef __AVX512F__
+    return fvec_cosine_avx512(a.data(), b.data(), a.size());
+#endif
+    float cosine  = 0;
+    for (size_t i = 0; i < a.size(); i++) {
+        cosine += a[i] * b[i];
+    }
+    return cosine;
+}
 
 float DistanceSquared(const Point& a, const Point& b) {
     assert(a.size() == b.size());

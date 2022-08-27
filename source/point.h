@@ -7,6 +7,8 @@ float DistanceSquared(const Point& a, const Point& b);
 
 float Distance(const Point& a, const Point& b);
 
+float ScalarDistance(const Point& a, const Point& b);
+
 std::ostream& operator<<(std::ostream& out, const Point& point);
 
 std::ostream& operator<<(std::ostream& out, const std::vector<Point>& points);
